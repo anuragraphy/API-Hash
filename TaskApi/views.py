@@ -14,7 +14,7 @@ from rest_framework.authentication import TokenAuthentication
 
 @api_view(['POST'])
 def task(request):
-    token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[1]  # Extract token from request headers
+    # token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[1]  # Extract token from request headers
     serializer = TaskSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         task_name = serializer.validated_data['taskName']
@@ -42,13 +42,14 @@ def getTasks(request):
 @permission_classes([IsAuthenticated])
 def deleteTask(request):
     serializer = TaskDeleteSerializer(data=request.data)
+    print(serializer)
     if serializer.is_valid():
         task_name = serializer.validated_data['taskName']
         try:
-            # if exists -- > delete
-            existing_task = TaskModel.objects.get(taskName=task_name)
+            # if exists -- >delete
+            existing_task = TaskModel.objects.get(taskName=task_name, user=request.user.id)
             existing_task.delete()
-            return Response(status=status.HTTP_200_OK)
+            return Response({'message': 'Delete successful'},status=status.HTTP_200_OK)
         except TaskModel.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -62,7 +63,7 @@ def register(request):
     try:
         user = User.objects.create_user(username=username, password=password)
         token = Token.objects.create(user=user)
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({'message': 'User Registration successful'},status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
