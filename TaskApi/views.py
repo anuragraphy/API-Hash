@@ -33,8 +33,8 @@ def task(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getTasks(request):
-    # get all tasks of user in ascending order
-    tasks = TaskModel.objects.filter(user=request.user.id).order_by('average')
+    # get all tasks of user in descending order
+    tasks = TaskModel.objects.filter(user=request.user.id).order_by('-average')
     serializer = TaskSerializer(tasks, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
